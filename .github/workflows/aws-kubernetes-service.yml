@@ -1,0 +1,64 @@
+name: Build and deploy an app to EKS
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CLUSTER_NAME: "qwerty_cluster"
+jobs:
+  build:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository this file is in
+      - uses: actions/checkout@v3
+
+      # Builds and pushes an image up to your docker hub
+      - name: Build, tag, and push image to docker hub
+        id: build-image
+        run: |
+          echo "....>>>>>>>>>logging in to docker hub<<<<<<<<<<<<<<....."
+          docker login -u=${{ secrets.DOCKER_USERNAME }} -p=${{ secrets.DOCKER_PASSWORD }}
+
+          echo Build started on `date`
+
+          echo "....>>>>>>>>>Building the Docker image<<<<<<<<<<<<<<........"
+          docker build -t baskarvj/httpdsample:${{ github.sha }} .
+          
+          
+          echo "....>>>>>>>>>Pushing image to docker hub<<<<<<<<<<<<<<....."
+          
+          docker push baskarvj/httpdsample:${{ github.sha }} 
+
+
+
+  deploy:
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      # Checks out the repository this file is in
+      - uses: actions/checkout@v3
+  
+
+      - name: Push Changes to argocd
+        run: |
+            git clone https://baskarvj:${{ secrets.git_pass }}@github.com/baskarvj/EKS_Compelete_setup.git
+            cd EKS_Compelete_setup
+            ls -la
+            sed -i '/image: baskarvj.*/c\        image: baskarvj/httpdsample:${{ github.sha }}' manifest/deploy.yml
+            cat manifest/deploy.yml
+            
+            git config user.email "baskeyvj03@gmail.com"
+            git config user.name "baskarvj"
+
+            git add .
+            git commit -m "image updated"
+            git push https://baskarvj:${{ secrets.git_pass }}@github.com/baskarvj/EKS_Compelete_setup.git
