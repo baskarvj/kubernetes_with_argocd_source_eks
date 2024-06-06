@@ -17,22 +17,39 @@ jobs:
       # Checks out the repository this file is in
       - uses: actions/checkout@v3
 
-      # Builds and pushes an image up to your docker hub
-      - name: Build, tag, and push image to docker hub
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_account_id }}:role/github_web_identity
+        role-session-name: githubassumesession
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+
+      # Builds and pushes an image up to your ECR
+      - name: Build, tag, and push image to ECR
         id: build-image
         run: |
-          echo "....>>>>>>>>>logging in to docker hub<<<<<<<<<<<<<<....."
-          docker login -u=${{ secrets.DOCKER_USERNAME }} -p=${{ secrets.DOCKER_PASSWORD }}
+          # echo "....>>>>>>>>>logging in to ECR Repository<<<<<<<<<<<<<<....."
+          #          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_account_id }}.dkr.ecr.us-east-1.amazonaws.com
+          #echo "....>>>>>>>>>logging in to docker hub<<<<<<<<<<<<<<....."
+          #docker login -u=${{ secrets.DOCKER_USERNAME }} -p=${{ secrets.DOCKER_PASSWORD }}
 
           echo Build started on `date`
 
           echo "....>>>>>>>>>Building the Docker image<<<<<<<<<<<<<<........"
-          docker build -t baskarvj/httpdsample:${{ github.sha }} .
+          docker build -t httpd .
+          docker tag httpd:${{ github.sha }} ${{ secrets.AWS_account_id }}.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}
+          # docker build -t baskarvj/httpdsample:${{ github.sha }} .
           
           
           echo "....>>>>>>>>>Pushing image to docker hub<<<<<<<<<<<<<<....."
           
-          docker push baskarvj/httpdsample:${{ github.sha }} 
+          # docker push baskarvj/httpdsample:${{ github.sha }} 
+          docker push 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}
 
 
 
@@ -53,7 +70,7 @@ jobs:
             git clone https://baskarvj:${{ secrets.git_pass }}@github.com/baskarvj/EKS_Compelete_setup.git
             cd EKS_Compelete_setup
             ls -la
-            sed -i '/image: baskarvj.*/c\         image: baskarvj/httpdsample:${{ github.sha }}' manifest/deploy.yml
+            sed -i '/image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd.*/c\         image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}' manifest/deploy.yml
            
             cat manifest/deploy.yml
             
