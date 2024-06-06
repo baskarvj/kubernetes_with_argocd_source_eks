@@ -53,7 +53,8 @@ jobs:
             git clone https://baskarvj:${{ secrets.git_pass }}@github.com/baskarvj/EKS_Compelete_setup.git
             cd EKS_Compelete_setup
             ls -la
-            sed -i '/image: baskarvj.*/c\        image: baskarvj/httpdsample:${{ github.sha }}' manifest/deploy.yml
+            sed -i '/image: baskarvj.*/c\         image: baskarvj/httpdsample:${{ github.sha }}' manifest/deploy.yml
+           
             cat manifest/deploy.yml
             
             git config user.email "baskeyvj03@gmail.com"
