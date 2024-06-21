@@ -41,7 +41,7 @@ jobs:
           echo Build started on `date`
 
           echo "....>>>>>>>>>Building the Docker image<<<<<<<<<<<<<<........"
-          docker build -t httpd .
+          docker build -t httpd:${{ github.sha }} .
           docker tag httpd:${{ github.sha }} ${{ secrets.AWS_account_id }}.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}
           # docker build -t baskarvj/httpdsample:${{ github.sha }} .
           
