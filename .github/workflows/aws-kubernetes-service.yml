@@ -70,7 +70,7 @@ jobs:
             git clone https://baskarvj:${{ secrets.git_pass }}@github.com/baskarvj/EKS_Compelete_setup.git
             cd EKS_Compelete_setup
             ls -la
-            sed -i '/image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd.*/c\         image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}' manifest/deploy.yml
+            sed -i 's|image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd[^[:space:]]*|image: 384834573830.dkr.ecr.us-east-1.amazonaws.com/httpd:${{ github.sha }}|' manifest/deploy.yml
            
             cat manifest/deploy.yml
             
